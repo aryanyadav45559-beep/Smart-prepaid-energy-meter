@@ -22,8 +22,8 @@
 #define TFT_CS              15   
 #define TFT_DC              33   
 #define TFT_RST              5   
-#define WIFI_STA_SSID       "DEEMACHINE_LAB"     
-#define WIFI_STA_PASSWORD   "43219876"  
+#define WIFI_STA_SSID       "YOUR_WIFI_SSID"     
+#define WIFI_STA_PASSWORD   "YOUR_WIFI_PASSWORD"  
 #define WIFI_CONNECT_TIMEOUT_MS  15000UL           
 
 
