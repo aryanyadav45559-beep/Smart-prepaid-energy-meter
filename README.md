@@ -104,3 +104,5 @@ The current dashboard uses plain HTTP and does not authenticate visitors. Anyone
 
 The firmware's theft action is currently a dashboard-triggered simulation. Although ACS1 is measured and displayed, the sketch does not automatically detect theft from that measurement. Treat the project as an academic prototype, not a certified billing or protective device.
 
+The firmware also applies load-control interlocks: a load cannot be re-enabled during an active theft event; essential loads cannot be enabled at zero balance; and non-essential loads cannot be enabled at or below their configured threshold. Recharge requests and threshold settings are range-checked against the persistence limits before being applied.
+
