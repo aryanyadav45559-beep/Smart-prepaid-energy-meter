@@ -646,18 +646,48 @@ void handleData() {
 }
 void handleToggle() {
   String load = server.arg("load");
-  if      (load == "h1essential")    setH1EssRelay(!h1EssON);
-  else if (load == "h1nonessential") setH1NonEssRelay(!h1NonEssON);
-  else if (load == "h2essential")    setH2EssRelay(!h2EssON);
-  else if (load == "h2nonessential") setH2NonEssRelay(!h2NonEssON);
-  else { server.send(400, "text/plain", "Unknown load"); return; }
+  bool enabling = false;
+  bool allowed = true;
+
+  if (load == "h1essential") {
+    enabling = !h1EssON;
+    allowed = !enabling || (balanceH1 > 0.0f && !theftActive);
+    if (allowed) setH1EssRelay(!h1EssON);
+  } else if (load == "h1nonessential") {
+    enabling = !h1NonEssON;
+    allowed = !enabling || (balanceH1 > thresholdH1 && !theftActive);
+    if (allowed) setH1NonEssRelay(!h1NonEssON);
+  } else if (load == "h2essential") {
+    enabling = !h2EssON;
+    allowed = !enabling || (balanceH2 > 0.0f && !theftActive);
+    if (allowed) setH2EssRelay(!h2EssON);
+  } else if (load == "h2nonessential") {
+    enabling = !h2NonEssON;
+    allowed = !enabling || (balanceH2 > thresholdH2 && !theftActive);
+    if (allowed) setH2NonEssRelay(!h2NonEssON);
+  } else {
+    server.send(400, "text/plain", "Unknown load");
+    return;
+  }
+
+  if (!allowed) {
+    server.send(409, "text/plain", theftActive
+      ? "Loads cannot be enabled during a theft event"
+      : "Recharge above the load cutoff before enabling this load");
+    return;
+  }
   server.send(200, "text/plain", "OK");
 }
 void handleRecharge() {
   int   house = server.arg("house").toInt();
   float amt   = server.arg("amount").toFloat();
-  if (amt <= 0.0f || house < 1 || house > 2) {
+  if (!isValidFloat(amt, 0.01f, 100000.0f) || house < 1 || house > 2) {
     server.send(400, "text/plain", "Invalid params");
+    return;
+  }
+  float currentBalance = (house == 1) ? balanceH1 : balanceH2;
+  if (currentBalance + amt > 100000.0f) {
+    server.send(400, "text/plain", "Balance limit exceeded");
     return;
   }
   if (house == 1) {
@@ -675,7 +705,7 @@ void handleRecharge() {
     if (balanceH2 > maxBalSeen_H2) maxBalSeen_H2 = balanceH2;
     alertH2 = false;
     
-    if (balanceH2 > thresholdH2) {
+    if (balanceH2 > thresholdH2 && !theftActive) {
       setH2EssRelay(true);
       setH2NonEssRelay(true);
     }
@@ -687,7 +717,7 @@ void handleRecharge() {
 void handleSetThresh() {
   int   house = server.arg("house").toInt();
   float val   = server.arg("value").toFloat();
-  if (val < 0.0f || house < 1 || house > 2) {
+  if (!isValidFloat(val, 0.0f, 50000.0f) || house < 1 || house > 2) {
     server.send(400, "text/plain", "Invalid params");
     return;
   }
