@@ -88,3 +88,19 @@ Electrical Engineering, VJTI Mumbai
 - Ensures critical appliances stay on even during low balance
 - Gives operators flexibility to change tariff rates dynamically
 - Automates load shedding intelligently
+
+## Setup
+
+1. Open `Code/SmartEnergyMeter_5.ino` in the Arduino IDE.
+2. Set `WIFI_STA_SSID` and `WIFI_STA_PASSWORD` to your local network before uploading the firmware.
+3. Install the libraries used by the sketch: WiFi, WebServer, Preferences, Adafruit GFX, Adafruit ST7735, and PZEM004Tv30.
+4. Connect the ESP32 and sensors according to your wiring, upload the sketch, and open the Serial Monitor at 115200 baud to find the dashboard IP address.
+
+Do not commit real network credentials. If credentials were previously committed to a public repository, change them on the access point as well; removing them from the latest source does not erase them from Git history.
+
+## Security and prototype limitations
+
+The current dashboard uses plain HTTP and does not authenticate visitors. Anyone who can reach the ESP32 on its network can read meter data and use controls such as recharge, relay toggles, theft simulation, recalibration, and reset. Use this only on a trusted, isolated development network; do not expose the device or its port to the internet. Authentication and encrypted transport should be added before use outside a controlled prototype network.
+
+The firmware's theft action is currently a dashboard-triggered simulation. Although ACS1 is measured and displayed, the sketch does not automatically detect theft from that measurement. Treat the project as an academic prototype, not a certified billing or protective device.
+
